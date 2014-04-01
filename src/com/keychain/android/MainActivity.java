@@ -10,6 +10,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.graphics.Bitmap;
@@ -46,26 +47,22 @@ public class MainActivity extends Activity {
             tvIsConnected.setText("You are NOT connected");
         }
 
-        new HttpAsyncTask().execute("https://sandbox-api.keychain.cc/apps/1");
+        new HttpAsyncTask().execute("http://sandbox-api.keychain.cc/users/1/apps");
     }
 
     public static String GET(String url) {
+        Log.d("Keychain", "Downloading " + url);
         InputStream inputStream = null;
         String result = "";
         try {
-
-            // create HttpClient
             HttpClient httpclient = new DefaultHttpClient();
-
-            // make GET request to the given URL
+            Log.i("Keychain", "About to make HTTP connection.");
             HttpResponse httpResponse = httpclient.execute(new HttpGet(url));
-
-            // receive response as inputStream
+            Log.i("Keychain", "Received HTTP response.");
             inputStream = httpResponse.getEntity().getContent();
-
-            // convert inputstream to string
             if (inputStream != null) {
                 result = convertInputStreamToString(inputStream);
+                Log.i("Keychain", result);
             } else {
                 result = "Did not work!";
             }
@@ -85,7 +82,6 @@ public class MainActivity extends Activity {
 
         inputStream.close();
         return result;
-
     }
 
     public boolean isConnected() {
@@ -101,32 +97,36 @@ public class MainActivity extends Activity {
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
-
             return GET(urls[0]);
         }
 
         @Override
         protected void onPostExecute(String result) {
+            Log.i("Keychain", "Inside onPostExecute with " + result);
             Toast.makeText(getBaseContext(), "Received!", Toast.LENGTH_LONG).show();
-            try {
-                JSONObject json = new JSONObject(result);
-                String imageURL = "http:" + json.getString("image_url");
-                etResponse.setText(imageURL);
+            etResponse.setText(result.substring(0, 20));
 
-                ImageDownloader d = new ImageDownloader();
-                try {
-                    Bitmap b = d.execute(imageURL).get();
-                    ImageAdapter i = new ImageAdapter(getBaseContext());
-                    i.addBitmap(b);
-                    GridView grid = (GridView) findViewById(R.id.gridView);
-                    grid.setAdapter(i);
-                } catch (InterruptedException e) {
-                    return;
-                } catch (ExecutionException e) {
-                    return;
+            ImageAdapter images = new ImageAdapter(getBaseContext());
+
+            try {
+                JSONArray jsonRecords = new JSONArray(result);
+                for (Integer i = 0; i < jsonRecords.length(); ++i) {
+                    String imageURL = "http:" + jsonRecords.getJSONObject(i).getString("image_url");
+                    Log.i("Keychain", "Downloading image: " + imageURL);
+                    try {
+                        ImageDownloader d = new ImageDownloader();
+                        Bitmap b = d.execute(imageURL).get();
+                        images.addBitmap(b);
+                    } catch (InterruptedException e) {
+                    } catch (ExecutionException e) {
+                    }
                 }
             } catch (JSONException e) {
+
             }
+
+            GridView grid = (GridView) findViewById(R.id.gridView);
+            grid.setAdapter(images);
         }
     }
 }
