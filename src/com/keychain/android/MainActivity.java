@@ -12,7 +12,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -24,6 +23,8 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.Activity;
+import com.facebook.*;
+import com.facebook.model.*;
 
 public class MainActivity extends Activity {
 

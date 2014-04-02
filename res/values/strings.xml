@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="app_name">HTTP GET JSON APP</string>
+    <string name="app_name">Keychain</string>
+    <string name="app_id">1481106628768155</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-
 </resources>
